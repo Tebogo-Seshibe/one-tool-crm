@@ -1,0 +1,55 @@
+.one-tool-crm-container {
+    display: grid;
+    grid-template-columns: 16px 1fr;
+    place-content: center; 
+    column-gap: 4px;
+
+    height: 32px;
+    padding: 0 12px;
+    font-weight: 500;
+}
+
+#one-tool-crm-button {
+    padding: 0 12px;
+    border-radius: 32px;
+    color: var(--text-color);
+    font-weight: 500;
+    background-color: var(--white-color);
+    outline: solid 1px var(--text-color);
+}
+#one-tool-crm-button {
+    line-height: 16px;
+}
+#one-tool-crm-button:hover { 
+    color: var(--hover-color);
+    outline-color: var(--hover-color);
+    outline-width: 2px;
+}
+
+#one-tool-crm-label {
+    line-height: 16px;
+}
+
+
+#one-tool-crm-spinner {
+    display: block;
+    height: 32px;
+    width: 32px;
+    padding: 8px;
+    border-radius: 50%;
+    outline: solid 1px var(--hover-color);
+    
+    transform: rotate(0deg);
+    animation: spin 2s linear infinite;
+    -moz-animation: spin 2s linear infinite;
+    -webkit-animation: spin 2s linear infinite;
+}
+@keyframes spin {
+    100% { transform: rotate(360deg); }
+}
+@-moz-keyframes spin {
+    100% { -moz-transform: rotate(360deg); }
+}
+@-webkit-keyframes spin {
+    100% { -webkit-transform: rotate(360deg); }
+}

@@ -1,0 +1,132 @@
+:root {
+    --accent-color: #473BF0;
+    --heading-color: #161C2D;
+    --text-color-light: #6E727D;
+    --text-color: #161c2d;
+    --swiper-theme-color: #007AFF;
+    --white-color: #FFFFFF;
+    --hover-color: #006DFE;
+    --warn-color: #F34D4D;
+}
+
+* {
+    margin: 0;
+    border: 0;
+    padding: 0;
+}
+
+main {
+    display: flex;
+    flex-direction: column;
+    width: 260px;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+}
+
+main > img {
+    flex: 0 0 auto;
+}
+main > div {
+    flex: 1 1 auto;
+}
+
+
+#logged-in {
+    font-size: 14px;
+    width: 100%;
+}
+#logged-in > div {
+    text-align: center;
+}
+#logged-in #logged-in-email {
+    color: var(--hover-color);
+    font-weight: 500;
+}
+#logged-in button {
+    display: block;
+    height: 32px;
+    background-color: var(--warn-color);
+    outline: solid 1px var(--warn-color);
+    width: 100%;
+    border-radius: 8px;
+    margin-top: 24px;
+
+    font-size: 14px;
+    color: var(--white-color);
+    font-weight: 500;
+
+    cursor: pointer;
+}
+#logged-in button:hover {
+    background-color: var(--white-color);
+    color: var(--warn-color);
+}
+
+
+#login-form {
+    width: 100%;
+}
+#login-form label {
+    display: block;
+    font-size: 14px;
+    width:calc(100% - 16px);
+    color: var(--text-color-light);
+    padding: 0 8px;
+    margin-bottom: 4px;
+    font-weight: 500;
+}
+#login-form input {
+    font-size: 12px;
+    display: block;
+    margin-bottom: 12px;
+    height: 32px;
+    width: calc(100% - 16px);
+    padding: 0 8px;
+    border-bottom: solid 1px var(--text-color-light);
+    background: rgba(0,0,0, 0.1);
+
+    color: var(--text-color);
+}
+#login-form button {
+    display: block;
+    height: 32px;
+    background-color: var(--hover-color);
+    outline: solid 1px var(--hover-color);
+    width: 100%;
+    border-radius: 8px;
+    margin-top: 24px;
+
+    font-size: 14px;
+    color: var(--white-color);
+
+    cursor: pointer;
+}
+#login-form button:hover {
+    background-color: var(--white-color);
+    color: var(--hover-color);
+    font-weight: 500;
+}
+
+#one-tool-crm-spinner {
+    display: block;
+    height: 24px;
+    width: 24px;
+    padding: 4px;
+    border-radius: 50%;
+    outline: solid 1px var(--hover-color);
+    
+    transform: rotate(0deg);
+    animation: spin 2s linear infinite;
+    -moz-animation: spin 2s linear infinite;
+    -webkit-animation: spin 2s linear infinite;
+}
+@keyframes spin {
+    100% { transform: rotate(360deg); }
+}
+@-moz-keyframes spin {
+    100% { -moz-transform: rotate(360deg); }
+}
+@-webkit-keyframes spin {
+    100% { -webkit-transform: rotate(360deg); }
+}

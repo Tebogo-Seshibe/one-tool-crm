@@ -1,0 +1,43 @@
+{
+    "manifest_version": 3,
+    "name": "1Tool CRM",
+    "description": "Intergation tool between 1Tool and LinkedIn",
+    "version": "1.0.0",
+    "icons": {
+        "16": "images/icon-16.png",
+        "32": "images/icon-32.png",
+        "64": "images/icon-64.png",
+        "128": "images/icon-128.png"
+    },
+    "action": {
+        "default_title": "1Tool CRM",
+        "default_popup": "popup/popup.html"
+    },
+    "web_accessible_resources": [{ 
+        "resources": [
+            "images/icon-16.png"
+        ],
+        "matches": [
+            "<all_urls>"
+        ]
+    }],
+    "permissions": [
+        "storage"
+    ],
+    "content_scripts": [
+        {
+            "js": [
+                "scripts/const.js",
+                "scripts/api.js",
+                "scripts/content.js"
+            ],
+            "css": [
+                "styles/colors.css",
+                "styles/content.css"
+            ],
+            "matches": [
+                "https://*.linkedin.com/in/*"
+            ]
+        }
+    ]
+}
