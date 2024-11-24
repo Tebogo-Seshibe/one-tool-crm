@@ -1,16 +1,17 @@
+// @ts-check
 /// <reference path="types.d.ts" />
 /// <reference path="const.js" />
+/// <reference path="utils.js" />
 /// <reference path="api.js" />
 
 /** @type {HTMLElement | null} */
-let moreButton = null;
-let timeout = -1;
-let lifetime = 10000;
+let buttonContainer = null;
 const refresh = 2500;
-const delay = 50;
 
-window.navigation.addEventListener('navigate', (e) => {
-    moreButton = null;
+
+// @ts-ignore
+window.navigation.addEventListener('navigate', async (/** @type {{ navigationType: 'replace' | 'push'; }} */ e) => {
+    buttonContainer = null;
 
     if (e.navigationType === 'replace') {
         const label = document.getElementById('one-tool-crm-label');
@@ -24,13 +25,12 @@ window.navigation.addEventListener('navigate', (e) => {
             button.parentElement?.removeChild(button);
         }
 
-        timeout = setTimeout(() => waitForButtons(), refresh);
+        setTimeout(async () => await doExtensionWork(), refresh);
     }
 });
 
-// @ts-check
-window.addEventListener('load', () => {
-    waitForButtons();
+window.addEventListener('load', async () => {
+    await doExtensionWork();
 });
 
 /**
@@ -39,6 +39,48 @@ window.addEventListener('load', () => {
  * @returns {Promise<void>}
  */
 async function doExtensionWork() {
+    //#region Fetch User Information
+
+    /** @type {LinkedInUser} */
+    const user = {
+        info: null,
+        email: null,
+        site: null,
+        employment: null,
+        region: null,
+    };
+    
+    openContactInfoModal();
+    await waitUntil(() => {
+        const loaders = document.querySelectorAll('artdeco-loader');
+        return loaders.length === 0 && !!getProfileName()
+    });
+    user.info = getProfileName();
+    user.email = getProfileEmail();
+    closeModal();
+
+    buttonContainer = await waitUntil(
+        () => document.getElementsByTagName('main')[0]
+            ?.getElementsByTagName('section')[0]
+            ?.getElementsByClassName('artdeco-dropdown')[0]
+            ?.parentElement
+    );
+
+    if (!buttonContainer) {
+        return;
+    }
+
+    buttonContainer.style.flexWrap = 'wrap';
+    buttonContainer.style.rowGap = '8px';
+    
+    user.region = getProfileRegion();
+    user.site = getProfileWebsite();
+    user.employment = getCurrentEmployement();
+    
+    //#endregion
+
+
+    toggleLoader(true);
     const api = new OneToolCRMApi();
 
     const authenticated = await authenticate(api);
@@ -52,19 +94,12 @@ async function doExtensionWork() {
         return;
     }
 
-    const { firstNames, lastName } = getUserNames();
-    if (!firstNames) {
-        alert('1ToolCRM: Failed to locate user names');
-        toggleLoader(false);
-        return;
-    }
-
-    const isUserInSystem = await userInSystem(api, firstNames, lastName);
+    const isUserInSystem = await userInSystem(api, user);
     toggleLoader(false);
     if (isUserInSystem) {
         insertUserExistsLabel();
     } else {
-        insertAddUserButton(api, firstNames, lastName);
+        insertAddUserButton(api, user);
     }
 }
 
@@ -96,58 +131,24 @@ async function authenticate(api) {
  * @returns {boolean}
  */
 function profileDashboardIsVisible() {
-    const match = location.pathname.match(/\/in\/.+\/$/);
+    const match = location.pathname.match(/\/in\/.+\/?$/);
     return !!match && 
            match.length > 0;
 }
 
-/**
- * @function
- * @description Parses the user's profile to their name
- * @returns {{firstNames: string, lastName:string}}
- */
-function getUserNames() {
-    let firstNames = ''
-    let lastName = ''
-
-    const notificationButtonLabel = document.getElementsByTagName('main')[0]
-        ?.getElementsByClassName('artdeco-button')[0]
-        ?.getAttribute('aria-label') ?? '';
-    const fullName = document.getElementsByTagName('main')[0]
-        ?.getElementsByTagName('a')[0]
-        ?.getElementsByTagName('h1')[0]
-        ?.innerHTML ?? '';
-
-    if (notificationButtonLabel) {
-        firstNames = notificationButtonLabel
-            .replace('Notify me about all of ', '')
-            .replace('’s posts', '')
-            .replace('Message ', '')
-            .trim()
-            ?? '';
-        lastName = fullName.replace(firstNames, '').trim();
-    } else {
-        firstNames = fullName;
-    }
-
-    return {
-        firstNames,
-        lastName
-    };
-}
 
 /**
  * @function
  * @description Tests whether the user exists within 1Tool
- * @param {OneToolCRMApi} api 
- * @param {string} firstNames 
- * @param {string} lastName
+ * @param {OneToolCRMApi} api
+ * @param {LinkedInUser} user
  * @returns {Promise<boolean>}
  */
-async function userInSystem(api, firstNames, lastName) {
+async function userInSystem(api, user) {
     const response = await api.showContact({
-        vorname: firstNames,
-        name: lastName,
+        vorname: user.info?.firstname,
+        name: user.info?.lastname,        
+        
     });
 
     return response.success && 
@@ -159,11 +160,10 @@ async function userInSystem(api, firstNames, lastName) {
  * @description Adds a button to the user's name section,
  * to add said user to 1Tool.
  * @param {OneToolCRMApi} api
- * @param {string} firstNames
- * @param {string} lastName
+ * @param {LinkedInUser} user
  * @returns {void}
  */
-function insertAddUserButton(api, firstNames, lastName) {
+function insertAddUserButton(api, user) {
     const img = document.createElement('img');
     img.src = chrome.runtime.getURL('images/icon-16.png');
 
@@ -177,23 +177,29 @@ function insertAddUserButton(api, firstNames, lastName) {
     button.appendChild(span);
     button.addEventListener('click', async () => {
         toggleLoader(true);
-        moreButton.parentElement?.removeChild(button);
+        buttonContainer?.removeChild(button);
         
         const response = await api.createContact({
-            vorname: firstNames,
-            name: lastName,
+            vorname: user.info?.firstname,
+            name: user.info?.lastname,
+            mail: user.email ?? undefined,
+            firma: user.employment?.company,
+            job: user.employment?.title,
+            // : user.region?.city,
+            // : user.region?.country,
+
         });
         
         toggleLoader(false);
         if (response.success) {
             insertUserExistsLabel();
         } else {
-            moreButton.parentElement?.appendChild(button);
-            alert('1ToolCRM: Failed to create user')
+            buttonContainer?.appendChild(button);
+            alert('1ToolCRM: Failed to create contact')
         }
     });
 
-    moreButton.parentElement?.appendChild(button);
+    buttonContainer?.appendChild(button);
 }
 
 /**
@@ -207,7 +213,7 @@ function insertUserExistsLabel() {
     img.src = chrome.runtime.getURL('images/icon-16.png');
 
     const span = document.createElement('span');
-    span.innerHTML = 'User exists within 1Tool';
+    span.innerHTML = 'Contact exists within 1Tool';
 
     const div = document.createElement('div');
     div.id = 'one-tool-crm-label';
@@ -215,46 +221,7 @@ function insertUserExistsLabel() {
     div.appendChild(img);
     div.appendChild(span);
 
-    moreButton?.parentElement?.appendChild(div);
-}
-
-
-/**
- * @function
- * @description Fetches the "More" button dom element
- * @returns {HTMLElement | null}
- */
-function getMoreButton() {
-    return 
-}
-
-/**
- * @function
- * @description Loops until the buttons on the user's action buttons are
- * visible
- * @returns {void}
- */
-function waitForButtons() {
-    clearTimeout(timeout);
-
-    moreButton = document.getElementsByTagName('main')[0]
-        ?.getElementsByTagName('section')[0]
-        ?.getElementsByClassName('artdeco-dropdown')[0];
-
-    if (!moreButton || !moreButton.parentElement) {
-        lifetime -= delay;
-
-        if (lifetime < 0) {
-            alert('1ToolCRM: Button took longer than expected to load');
-        } else {   
-            timeout = setTimeout(() => waitForButtons(), delay);
-        }
-    } else {
-        moreButton.parentElement.style.flexWrap = 'wrap';
-        moreButton.parentElement.style.rowGap = '8px';
-        toggleLoader(true);
-        doExtensionWork();
-    }
+    buttonContainer?.appendChild(div);
 }
 
 /**
@@ -269,7 +236,7 @@ function toggleLoader(visible) {
         img.src = chrome.runtime.getURL('images/icon-16.png');
         img.id = 'one-tool-crm-spinner';
 
-        moreButton.parentElement?.appendChild(img);
+        buttonContainer?.appendChild(img);
     } else if (!visible && spinner) {
         spinner.parentElement?.removeChild(spinner);
     }

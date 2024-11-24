@@ -37,6 +37,25 @@ type AuthResponse = {
 }
 
 
+type LinkedInUser = {
+    info: {
+        firstname: string,
+        lastname: string
+    } | null
+    email: string | null
+    region: {
+        city: string, 
+        country: string
+    } | null
+    site: {
+        url: string,
+        id: string
+    } | null
+    employment: {
+        company: string,
+        title: string
+    } | null
+}
 
 type Contact = {
  id: number
