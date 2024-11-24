@@ -76,7 +76,6 @@ async function doExtensionWork() {
     user.region = getProfileRegion();
     user.site = getProfileWebsite();
     user.employment = getCurrentEmployement();
-    
     //#endregion
 
 

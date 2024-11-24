@@ -159,11 +159,14 @@ function getCurrentEmployement() {
         return null;
     }
 
+    const maxSpans = 5;
+    const spans = currentEmployerDiv?.querySelectorAll('span[aria-hidden="true"]');
     let company = '';
     let title = '';
     
-    if (currentEmployerDiv?.children.length === 1) {
-        const spans = currentEmployerDiv?.querySelectorAll('span[aria-hidden="true"]');
+    console.log(currentEmployerDiv?.querySelectorAll('span[aria-hidden="true"]'))
+
+    if (currentEmployerDiv?.children.length === 1 || spans.length <= maxSpans) {
         title = spans.item(0).innerHTML;
         company = spans.item(1).innerHTML;
     } else {
