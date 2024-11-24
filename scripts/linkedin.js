@@ -164,8 +164,6 @@ function getCurrentEmployement() {
     let company = '';
     let title = '';
     
-    console.log(currentEmployerDiv?.querySelectorAll('span[aria-hidden="true"]'))
-
     if (currentEmployerDiv?.children.length === 1 || spans.length <= maxSpans) {
         title = spans.item(0).innerHTML;
         company = spans.item(1).innerHTML;
